@@ -105,6 +105,7 @@ function agendarUltimato(linhaNum, diaAulaStr, horario) {
 
   // Só agenda se o horário de disparo ainda está no futuro
   if (dataDisparo > new Date()) {
+    limparGatilhosTemporarios('executarUltimato');
     ScriptApp.newTrigger('executarUltimato')
       .timeBased()
       .at(dataDisparo)
@@ -313,9 +314,10 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     phone:               phoneFmt,
     aluno:               nomeAluno,
     ProfessorParticular: professor,
-    data_aulaPP:         _dataParaISO(dataAula, horario),
-    horario_aulaPP:      horario.replace(':', 'h')
+    horario_aulaPP:      horario.replace(':', 'h'),
+    data_aulaPP:         _dataParaISO(dataAula, horario)
   };
+  // TODO: data_aulaPP retorna 400 — verificar tipo/formato esperado no BotConversa
 
   var opcoes = {
     method:      'post',
