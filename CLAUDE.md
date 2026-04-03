@@ -26,6 +26,15 @@ Este arquivo fornece contexto e instruções para assistentes de IA (Claude, Cop
 ### Pendências imediatas
 Nenhuma — sistema em produção.
 
+### Melhorias prontas para ativar (salvas no git, não implantadas)
+- 🔜 Mensagem urgente de ultimato para o pai + notificações de "CANCELADO POR FALTA DE CONFIRMAÇÃO" — commit `80c2544`
+  - Requer: criar flow de ultimato no BotConversa + configurar `BOTCONVERSA_ULTIMATO_URL` nas Propriedades do Script
+  - Para ativar: `git checkout 80c2544 -- src/Confirmacao.gs`
+
+### Versão implantada no Apps Script
+- **Versão 2** — `doPost` retorna JSON, fluxo completo funcionando
+- Código correspondente: branch `claude/continue-from-md-lel3o`, commit `f479c87` (revertido via `52a8005`)
+
 ### Propriedades do Script configuradas
 | Chave | Status |
 |-------|--------|
@@ -35,6 +44,7 @@ Nenhuma — sistema em produção.
 | `CELULAR_PROFESSOR` | ✅ Configurado |
 | `WEBHOOK_SECRET` | ✅ Configurado |
 | `EMAIL_TRELLO` | ✅ Configurado |
+| `BOTCONVERSA_ULTIMATO_URL` | ⏳ Não configurado (necessário para melhoria do ultimato) |
 
 ### Branch de trabalho
 `claude/continue-from-md-lel3o` — código atual em produção (Versão 2 no Apps Script).
