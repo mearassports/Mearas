@@ -234,6 +234,7 @@ function doPost(e) {
 // =============================================================================
 
 function processarResposta(acao, nomeAluno, automatico) {
+  console.log('processarResposta chamada — acao: ' + acao + ', aluno: ' + nomeAluno);
   var aba = getAbaAlunos();
   var dados = aba.getDataRange().getValues();
   var linhaIdx = -1;
