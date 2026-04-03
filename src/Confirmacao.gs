@@ -285,10 +285,9 @@ function processarResposta(acao, nomeAluno, automatico) {
     enviarTextoGrupo(grupoId, msgGrupo);
   }
 
-  // Notifica coordenadora em caso de reagendamento
-  if (acao === 'reag') {
-    _notificarCoordenadora(nomeAluno, diaAulaStr, horario, professor);
-  }
+  // Notifica professor e secretaria em todos os casos
+  _notificarProfessor(nomeAluno, diaAulaStr, horario, professor, acao);
+  _notificarSecretaria(nomeAluno, diaAulaStr, horario, professor, acao);
 
   // Cria card no Trello para cancelamentos e reagendamentos
   if (acao === 'canc' || acao === 'reag') {
@@ -398,29 +397,49 @@ function limparGatilhosTemporarios(nomeFuncao) {
 // FUNÇÕES INTERNAS AUXILIARES
 // =============================================================================
 
-function _notificarCoordenadora(nomeAluno, diaAulaStr, horario, professor) {
-  var celular = getProps().getProperty('CELULAR_COORDENADORA');
+function _notificarProfessor(nomeAluno, diaAulaStr, horario, professor, acao) {
+  var celular = getProps().getProperty('CELULAR_PROFESSOR');
   if (!celular) return;
 
+  var msgs = {
+    conf: '✅ ' + nomeAluno + ' confirmou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
+    canc: '❌ ' + nomeAluno + ' cancelou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
+    reag: '🔄 ' + nomeAluno + ' quer reagendar a aula do dia ' + diaAulaStr + ' às ' + horario + '.'
+  };
+
+  _enviarMensagemWhatsApp(celular, msgs[acao] || '', 'professor');
+}
+
+function _notificarSecretaria(nomeAluno, diaAulaStr, horario, professor, acao) {
+  var celular = getProps().getProperty('CELULAR_SECRETARIA');
+  if (!celular) return;
+
+  var msgs = {
+    conf: '✅ ' + nomeAluno + ' confirmou a aula com ' + professor + ' no dia ' + diaAulaStr + ' às ' + horario + '.',
+    canc: '❌ ' + nomeAluno + ' cancelou a aula com ' + professor + ' no dia ' + diaAulaStr + ' às ' + horario + '.',
+    reag: '🔄 ' + nomeAluno + ' quer reagendar a aula com ' + professor + ' no dia ' + diaAulaStr + ' às ' + horario + '. Entre em contato para remarcar.'
+  };
+
+  _enviarMensagemWhatsApp(celular, msgs[acao] || '', 'secretaria');
+}
+
+function _enviarMensagemWhatsApp(celular, mensagem, destino) {
   var url = getProps().getProperty('BOTCONVERSA_WEBHOOK_URL');
-  if (!url) return;
+  if (!url || !mensagem) return;
 
-  var msg = '🔄 Reagendamento solicitado: ' + nomeAluno
-    + ', aula de ' + diaAulaStr + ' às ' + horario
-    + ' com ' + professor + '. Por favor, entre em contato para remarcar.';
-
-  var payload = { phone: celular, mensagem: msg };
-  var opcoes  = {
+  var phone = celular.charAt(0) === '+' ? celular : '+' + celular;
+  var opcoes = {
     method: 'post',
     contentType: 'application/json',
-    payload: JSON.stringify(payload),
+    payload: JSON.stringify({ phone: phone, mensagem: mensagem }),
     muteHttpExceptions: true
   };
 
   try {
-    UrlFetchApp.fetch(url, opcoes);
+    var resp = UrlFetchApp.fetch(url, opcoes);
+    console.log('Notificação ' + destino + ': HTTP ' + resp.getResponseCode());
   } catch (err) {
-    console.error('Erro ao notificar coordenadora: ' + err.message);
+    console.error('Erro ao notificar ' + destino + ': ' + err.message);
   }
 }
 
