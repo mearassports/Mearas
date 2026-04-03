@@ -396,6 +396,27 @@ function limparGatilhosTemporarios(nomeFuncao) {
 }
 
 // =============================================================================
+// 9. CONFIGURAÇÃO INICIAL — rodar UMA VEZ para instalar o trigger diário
+// =============================================================================
+
+/**
+ * Cria o trigger diário para dispararLembretesAmanha() entre 08h e 09h.
+ * Execute esta função manualmente uma única vez pelo editor do Apps Script.
+ * Ela remove qualquer trigger anterior antes de criar o novo (idempotente).
+ */
+function configurarTriggerDiario() {
+  limparGatilhosTemporarios('dispararLembretesAmanha');
+
+  ScriptApp.newTrigger('dispararLembretesAmanha')
+    .timeBased()
+    .everyDays(1)
+    .atHour(8)
+    .create();
+
+  console.log('Trigger diário configurado: dispararLembretesAmanha às 08h.');
+}
+
+// =============================================================================
 // FUNÇÕES INTERNAS AUXILIARES
 // =============================================================================
 
