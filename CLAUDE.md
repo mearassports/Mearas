@@ -4,7 +4,7 @@ Este arquivo fornece contexto e instruções para assistentes de IA (Claude, Cop
 
 ---
 
-## Status da Sessão (atualizado em 03/04/2026)
+## Status da Sessão (atualizado em 03/04/2026) — SISTEMA EM PRODUÇÃO
 
 ### O que foi feito
 - ✅ Flow do BotConversa criado com mensagem de lembrete + botões (Confirmar / Cancelar / Reagendar)
@@ -14,14 +14,17 @@ Este arquivo fornece contexto e instruções para assistentes de IA (Claude, Cop
 - ✅ Retry não reexecuta em erro 4xx (evita duplicar mensagens)
 - ✅ Triggers acumulados de `executarUltimato` — problema corrigido (limpa antes de criar novo)
 - ✅ `doPost` recebe cliques dos botões e atualiza planilha
+- ✅ `doPost` retorna JSON para compatibilidade com BotConversa
 - ✅ Trello notificado via e-mail para cancelamentos e reagendamentos
 - ✅ Notificação do professor via segundo webhook BotConversa (`BOTCONVERSA_NOTIFICATION_URL`)
 - ✅ Professor e secretária notificados pelo próprio BotConversa via "Notificar membros do espaço"
 - ✅ Notificação do professor testada com clique real e confirmada funcionando
+- ✅ Flow do BotConversa conectado ao webhook do Apps Script (Versão 2)
+- ✅ Trigger diário configurado — `dispararLembretesAmanha()` roda todo dia às 08h
+- ✅ Fluxo completo validado end-to-end
 
 ### Pendências imediatas
-- [ ] Configurar trigger diário para `dispararLembretesAmanha()` às 08h no Apps Script
-- [ ] Validar se `data_aulaPP` chega corretamente no flow do BotConversa
+Nenhuma — sistema em produção.
 
 ### Propriedades do Script configuradas
 | Chave | Status |
@@ -34,7 +37,7 @@ Este arquivo fornece contexto e instruções para assistentes de IA (Claude, Cop
 | `EMAIL_TRELLO` | ✅ Configurado |
 
 ### Branch de trabalho
-`claude/setup-tests-s8VIh` — todo o código atual está aqui.
+`claude/continue-from-md-lel3o` — código atual em produção (Versão 2 no Apps Script).
 
 ---
 
