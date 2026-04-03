@@ -204,28 +204,29 @@ function verificarCancelamentoFinal() {
 // =============================================================================
 
 function doPost(e) {
+  var json = ContentService.MimeType.JSON;
   try {
     var payload = JSON.parse(e.postData.contents);
 
     // Validação do token secreto
     var secret = getProps().getProperty('WEBHOOK_SECRET');
     if (secret && payload.token !== secret) {
-      return ContentService.createTextOutput('Unauthorized');
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Unauthorized' })).setMimeType(json);
     }
 
     var acao      = payload.acao;       // 'conf', 'canc' ou 'reag'
     var nomeAluno = payload.nome_aluno; // Nome do aluno
 
     if (!acao || !nomeAluno) {
-      return ContentService.createTextOutput('Payload inválido');
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Payload inválido' })).setMimeType(json);
     }
 
     processarResposta(acao, nomeAluno, false);
-    return ContentService.createTextOutput('OK');
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok' })).setMimeType(json);
 
   } catch (err) {
     console.error('Erro no doPost: ' + err.message);
-    return ContentService.createTextOutput('Erro: ' + err.message);
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.message })).setMimeType(json);
   }
 }
 
