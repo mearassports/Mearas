@@ -313,7 +313,7 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     phone:               phoneFmt,
     aluno:               nomeAluno,
     ProfessorParticular: professor,
-    data_aulaPP:         dataAula.replace(/\//g, '-'),
+    data_aulaPP:         _dataParaISO(dataAula),
     horario_aulaPP:      horario.replace(':', 'h')
   };
 
@@ -444,6 +444,12 @@ function _parseDateStr(dateStr) {
   var partes = dateStr.split('/');
   // partes[0]=dia, partes[1]=mes, partes[2]=ano
   return new Date(parseInt(partes[2], 10), parseInt(partes[1], 10) - 1, parseInt(partes[0], 10));
+}
+
+// Converte string 'dd/MM/yyyy' para formato ISO 'yyyy-MM-dd 00:00:00' esperado pelo BotConversa
+function _dataParaISO(dataStr) {
+  var partes = dataStr.split('/');
+  return partes[2] + '-' + partes[1] + '-' + partes[0] + ' 00:00:00';
 }
 
 // Normaliza horário vindo do Sheets: pode ser Date (coluna formatada como hora) ou string
