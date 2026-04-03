@@ -76,7 +76,7 @@ function dispararLembretesAmanha() {
     if (diaAulaStr === amanhaStr && status === '') {
       var phone     = String(linha[COL_WHATSAPP]).trim();
       var nomeAluno = String(linha[COL_NOME]).trim();
-      var horario   = String(linha[COL_HORARIO]).trim();
+      var horario   = _formatarHorario(linha[COL_HORARIO]);
       var professor = String(linha[COL_PROFESSOR]).trim();
 
       enviarLembreteViaBotConversa(phone, nomeAluno, diaAulaStr, horario, professor);
@@ -125,7 +125,7 @@ function executarUltimato() {
     var diaAulaStr = (diaAula instanceof Date)
       ? Utilities.formatDate(diaAula, Session.getScriptTimeZone(), 'dd/MM/yyyy')
       : String(diaAula).trim();
-    var horario = String(linha[COL_HORARIO]).trim();
+    var horario = _formatarHorario(linha[COL_HORARIO]);
 
     // Verifica se esta aula é nas próximas ~3h
     var dataAula = _parseDateStr(diaAulaStr);
@@ -179,7 +179,7 @@ function verificarCancelamentoFinal() {
     var diaAulaStr = (diaAula instanceof Date)
       ? Utilities.formatDate(diaAula, Session.getScriptTimeZone(), 'dd/MM/yyyy')
       : String(diaAula).trim();
-    var horario = String(linha[COL_HORARIO]).trim();
+    var horario = _formatarHorario(linha[COL_HORARIO]);
 
     var dataAulaDate = _parseDateStr(diaAulaStr);
     var partes = horario.split(':');
@@ -249,7 +249,7 @@ function processarResposta(acao, nomeAluno, automatico) {
 
   var linha     = dados[linhaIdx];
   var professor = String(linha[COL_PROFESSOR]).trim();
-  var horario   = String(linha[COL_HORARIO]).trim();
+  var horario   = _formatarHorario(linha[COL_HORARIO]);
   var diaAula   = linha[COL_DIA_AULA];
   var diaAulaStr = (diaAula instanceof Date)
     ? Utilities.formatDate(diaAula, Session.getScriptTimeZone(), 'dd/MM/yyyy')
@@ -440,4 +440,12 @@ function _parseDateStr(dateStr) {
   var partes = dateStr.split('/');
   // partes[0]=dia, partes[1]=mes, partes[2]=ano
   return new Date(parseInt(partes[2], 10), parseInt(partes[1], 10) - 1, parseInt(partes[0], 10));
+}
+
+// Normaliza horário vindo do Sheets: pode ser Date (coluna formatada como hora) ou string
+function _formatarHorario(val) {
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'HH:mm');
+  }
+  return String(val).trim();
 }
