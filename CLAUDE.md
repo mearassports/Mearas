@@ -4,6 +4,40 @@ Este arquivo fornece contexto e instruções para assistentes de IA (Claude, Cop
 
 ---
 
+## Status da Sessão (atualizado em 03/04/2026)
+
+### O que foi feito
+- ✅ Flow do BotConversa criado com mensagem de lembrete + botões (Confirmar / Cancelar / Reagendar)
+- ✅ Payload do lembrete ajustado para campos do BotConversa: `phone`, `aluno`, `ProfessorParticular`, `horario_aulaPP`, `data_aulaPP`
+- ✅ Data enviada como `dd/MM` (ex: `04/04`) e horário como `10h` ou `10h30`
+- ✅ Telefone enviado com `+` (ex: `+5561999999999`)
+- ✅ Retry não reexecuta em erro 4xx (evita duplicar mensagens)
+- ✅ Triggers acumulados de `executarUltimato` — problema corrigido (limpa antes de criar novo)
+- ✅ `doPost` recebe cliques dos botões e atualiza planilha
+- ✅ Trello notificado via e-mail para cancelamentos e reagendamentos
+- ✅ Notificação do professor via segundo webhook BotConversa (`BOTCONVERSA_NOTIFICATION_URL`)
+- ✅ Professor e secretária notificados pelo próprio BotConversa via "Notificar membros do espaço"
+
+### Pendências imediatas
+- [ ] Testar fluxo completo com clique real no botão do WhatsApp (confirmar que professor recebe)
+- [ ] Configurar trigger diário para `dispararLembretesAmanha()` às 08h no Apps Script
+- [ ] Validar se `data_aulaPP` chega corretamente no flow do BotConversa
+
+### Propriedades do Script configuradas
+| Chave | Status |
+|-------|--------|
+| `SPREADSHEET_ID` | ✅ Configurado |
+| `BOTCONVERSA_WEBHOOK_URL` | ✅ Configurado |
+| `BOTCONVERSA_NOTIFICATION_URL` | ✅ Configurado (webhook notificação professor) |
+| `CELULAR_PROFESSOR` | ✅ Configurado |
+| `WEBHOOK_SECRET` | ✅ Configurado |
+| `EMAIL_TRELLO` | ✅ Configurado |
+
+### Branch de trabalho
+`claude/setup-tests-s8VIh` — todo o código atual está aqui.
+
+---
+
 ## Visão Geral do Projeto
 
 **Sistema de Confirmação de Aulas Particulares** — automação em Google Apps Script integrada a uma planilha Google Sheets para enviar lembretes de aulas via WhatsApp e gerenciar confirmações, cancelamentos e reagendamentos dos alunos.
@@ -36,15 +70,24 @@ Apps Script
                                                 └─► Apps Script atualiza planilha + notifica grupo/coordenadora/Trello
 ```
 
-### Payload enviado ao BotConversa
+### Payload enviado ao BotConversa (lembrete)
 
 ```json
 {
-  "phone": "5561999999999",
-  "nome_aluno": "João Silva",
-  "data_aula": "02/03/2026",
-  "horario": "14:00",
-  "professor": "Israel"
+  "phone": "+5561999999999",
+  "aluno": "João Silva",
+  "ProfessorParticular": "Israel",
+  "data_aulaPP": "02/03",
+  "horario_aulaPP": "14h"
+}
+```
+
+### Payload enviado ao BotConversa (notificação professor)
+
+```json
+{
+  "phone": "+5561999999999",
+  "mensagem": "✅ João Silva confirmou a aula do dia 02/03 às 14h."
 }
 ```
 
@@ -112,10 +155,12 @@ Estas constantes ficam no início do arquivo `.gs` principal:
 
 | Constante | Descrição | Sensível? |
 |-----------|-----------|-----------|
-| `BOTCONVERSA_WEBHOOK_URL` | URL de webhook automation do BotConversa | **SIM — nunca commitar** |
-| `CELULAR_COORDENADORA` | Número que recebe alertas de reagendamento | Sim |
+| `SPREADSHEET_ID` | ID da planilha Google Sheets | Sim |
+| `BOTCONVERSA_WEBHOOK_URL` | URL webhook automation BotConversa (lembretes) | **SIM — nunca commitar** |
+| `BOTCONVERSA_NOTIFICATION_URL` | URL webhook automation BotConversa (notificação professor) | **SIM — nunca commitar** |
+| `CELULAR_PROFESSOR` | Número do professor com DDI, sem `+` | Sim |
 | `EMAIL_TRELLO` | E-mail do board Trello para criação de cards | Sim |
-| `NOME_ABA` | Nome da aba na planilha (padrão: `"Alunos"`) | Não |
+| `WEBHOOK_SECRET` | Token secreto para validar chamadas ao doPost | Sim |
 
 > Armazene valores sensíveis nas **Propriedades do Script** (`PropertiesService.getScriptProperties()`) em vez de hardcoded no código. Nunca commitar tokens, URLs de webhook ou e-mails pessoais.
 
@@ -174,13 +219,13 @@ docs: atualizar CLAUDE.md com fluxo de status atualizado
 
 ## Pendências Operacionais
 
-- [ ] Criar flow no BotConversa com mensagem natural + botões (Confirmar / Cancelar / Reagendar)
-- [ ] Configurar ação "Enviar Fluxo" no webhook automation do BotConversa
-- [ ] Mapear variáveis do payload (`nome_aluno`, `data_aula`, `horario`, `professor`) no flow
-- [ ] Configurar webhook de saída no flow (ao clicar botão → chama `doPost` do Apps Script)
-- [ ] Adaptar `enviarLembreteViaBotConversa()` com a URL e campos corretos
+- [x] Criar flow no BotConversa com mensagem natural + botões (Confirmar / Cancelar / Reagendar)
+- [x] Configurar webhook automation do BotConversa (lembrete)
+- [x] Mapear variáveis do payload no flow (`aluno`, `ProfessorParticular`, `data_aulaPP`, `horario_aulaPP`)
+- [x] Configurar webhook de saída no flow (ao clicar botão → chama `doPost` do Apps Script)
+- [x] Configurar webhook de notificação do professor (`BOTCONVERSA_NOTIFICATION_URL`)
 - [ ] Configurar trigger diário para `dispararLembretesAmanha()` no Apps Script (08h–09h)
-- [ ] Testar fluxo completo de botões com número real
+- [ ] Testar fluxo completo com clique real no botão e confirmar notificação do professor
 
 ---
 
