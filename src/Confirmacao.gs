@@ -145,7 +145,7 @@ function executarUltimato() {
       var msg = 'Oi! Aula de ' + nomeAluno + ' com ' + professor + ' é HOJE às ' + horario
         + '. Confirma presença? Responde rápido, faltam menos de 3h! 👇';
 
-      enviarLembreteViaBotConversa(phone, nomeAluno, diaAulaStr, horario, professor);
+      enviarUltimatoViaBotConversa(phone, nomeAluno, diaAulaStr, horario, professor);
       aba.getRange(i + 1, COL_STATUS + 1).setValue(STATUS_ULTIMATO);
 
       // Agenda verificação de cancelamento automático (30min após ultimato)
@@ -271,8 +271,9 @@ function processarResposta(acao, nomeAluno, automatico) {
     msgGrupo   = '✅ ' + nomeAluno + ' confirmou a aula de ' + diaAulaStr + ' às ' + horario + ' com ' + professor + '.';
   } else if (acao === 'canc') {
     novoStatus = STATUS_CANC;
-    var sufixo = automatico ? ' (cancelado automaticamente por falta de resposta)' : '';
-    msgGrupo   = '❌ ' + nomeAluno + ' cancelou a aula de ' + diaAulaStr + ' às ' + horario + sufixo + '.';
+    msgGrupo = automatico
+      ? '⚠️ Aula de ' + nomeAluno + ' em ' + diaAulaStr + ' às ' + horario + ' foi CANCELADA POR FALTA DE CONFIRMAÇÃO.'
+      : '❌ ' + nomeAluno + ' cancelou a aula de ' + diaAulaStr + ' às ' + horario + '.';
   } else if (acao === 'reag') {
     novoStatus = STATUS_REAG;
     msgGrupo   = '🔄 ' + nomeAluno + ' quer reagendar a aula de ' + diaAulaStr + ' às ' + horario + '. Aguardando confirmação.';
@@ -291,11 +292,12 @@ function processarResposta(acao, nomeAluno, automatico) {
   }
 
   // Notifica professor via webhook de notificações
-  _notificarProfessor(nomeAluno, diaAulaStr, horario, acao);
+  _notificarProfessor(nomeAluno, diaAulaStr, horario, acao, automatico);
 
   // Cria card no Trello para cancelamentos e reagendamentos
   if (acao === 'canc' || acao === 'reag') {
-    _criarCardTrello(nomeAluno, diaAulaStr, horario, professor, novoStatus);
+    var statusTrello = (acao === 'canc' && automatico) ? 'Cancelado - Sem Confirmação' : novoStatus;
+    _criarCardTrello(nomeAluno, diaAulaStr, horario, professor, statusTrello);
   }
 }
 
@@ -350,6 +352,55 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     espera *= 2;
   }
   console.error('BotConversa falhou após ' + tentativas + ' tentativas para ' + nomeAluno);
+}
+
+// Envia ultimato via flow específico do BotConversa (mensagem urgente)
+// Usa BOTCONVERSA_ULTIMATO_URL; se não configurada, cai no flow padrão de lembrete
+function enviarUltimatoViaBotConversa(phone, nomeAluno, dataAula, horario, professor) {
+  var url = getProps().getProperty('BOTCONVERSA_ULTIMATO_URL')
+         || getProps().getProperty('BOTCONVERSA_WEBHOOK_URL');
+  if (!url) {
+    console.error('Nenhuma URL de ultimato configurada nas Propriedades do Script.');
+    return;
+  }
+
+  var phoneFmt = phone.charAt(0) === '+' ? phone : '+' + phone;
+
+  var payload = {
+    phone:               phoneFmt,
+    aluno:               nomeAluno,
+    ProfessorParticular: professor,
+    horario_aulaPP:      _formatarHorarioExibicao(horario),
+    data_aulaPP:         _formatarDataExibicao(dataAula)
+  };
+
+  var opcoes = {
+    method:      'post',
+    contentType: 'application/json',
+    payload:     JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  console.log('Ultimato BotConversa: ' + JSON.stringify(payload));
+  var tentativas = 3;
+  var espera = 2000;
+  for (var t = 0; t < tentativas; t++) {
+    try {
+      var resp = UrlFetchApp.fetch(url, opcoes);
+      var code = resp.getResponseCode();
+      if (code >= 200 && code < 300) {
+        console.log('Ultimato enviado para ' + nomeAluno);
+        return;
+      }
+      console.warn('Ultimato HTTP ' + code + ' para ' + nomeAluno + '. Tentativa ' + (t + 1));
+      if (code >= 400 && code < 500) break;
+    } catch (err) {
+      console.warn('Erro ao enviar ultimato: ' + err.message + '. Tentativa ' + (t + 1));
+    }
+    if (t < tentativas - 1) Utilities.sleep(espera);
+    espera *= 2;
+  }
+  console.error('Ultimato falhou após ' + tentativas + ' tentativas para ' + nomeAluno);
 }
 
 // =============================================================================
@@ -423,7 +474,7 @@ function configurarTriggerDiario() {
 // =============================================================================
 
 
-function _notificarProfessor(nomeAluno, diaAulaStr, horario, acao) {
+function _notificarProfessor(nomeAluno, diaAulaStr, horario, acao, automatico) {
   var url    = getProps().getProperty('BOTCONVERSA_NOTIFICATION_URL');
   var celular = getProps().getProperty('CELULAR_PROFESSOR');
   if (!url || !celular) {
@@ -433,7 +484,9 @@ function _notificarProfessor(nomeAluno, diaAulaStr, horario, acao) {
 
   var msgs = {
     conf: '✅ ' + nomeAluno + ' confirmou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
-    canc: '❌ ' + nomeAluno + ' cancelou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
+    canc: automatico
+      ? '⚠️ AULA CANCELADA POR FALTA DE CONFIRMAÇÃO — ' + nomeAluno + ' não respondeu. Aula do dia ' + diaAulaStr + ' às ' + horario + ' cancelada automaticamente.'
+      : '❌ ' + nomeAluno + ' cancelou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
     reag: '🔄 ' + nomeAluno + ' quer reagendar a aula do dia ' + diaAulaStr + ' às ' + horario + '.'
   };
 
