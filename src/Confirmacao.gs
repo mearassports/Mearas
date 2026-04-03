@@ -3,11 +3,12 @@
 // Google Apps Script
 //
 // Configuração (salvar nas Propriedades do Script, nunca hardcodar aqui):
-//   SPREADSHEET_ID        — ID da planilha Google Sheets
-//   BOTCONVERSA_WEBHOOK_URL — URL de webhook automation do BotConversa
-//   CELULAR_COORDENADORA  — Número da coordenadora (ex: 5561999999999)
-//   EMAIL_TRELLO          — E-mail do board Trello para criação de cards
-//   WEBHOOK_SECRET        — Token secreto para validar chamadas ao doPost
+//   SPREADSHEET_ID              — ID da planilha Google Sheets
+//   BOTCONVERSA_WEBHOOK_URL     — URL de webhook automation do BotConversa (lembretes)
+//   BOTCONVERSA_NOTIFICATION_URL — URL de webhook automation para notificações (professor)
+//   CELULAR_PROFESSOR           — Número do professor com DDI (ex: 5561999999999)
+//   EMAIL_TRELLO                — E-mail do board Trello para criação de cards
+//   WEBHOOK_SECRET              — Token secreto para validar chamadas ao doPost
 // =============================================================================
 
 var NOME_ABA = 'Alunos';
@@ -287,6 +288,9 @@ function processarResposta(acao, nomeAluno, automatico) {
     enviarTextoGrupo(grupoId, msgGrupo);
   }
 
+  // Notifica professor via webhook de notificações
+  _notificarProfessor(nomeAluno, diaAulaStr, horario, acao);
+
   // Cria card no Trello para cancelamentos e reagendamentos
   if (acao === 'canc' || acao === 'reag') {
     _criarCardTrello(nomeAluno, diaAulaStr, horario, professor, novoStatus);
@@ -395,6 +399,33 @@ function limparGatilhosTemporarios(nomeFuncao) {
 // FUNÇÕES INTERNAS AUXILIARES
 // =============================================================================
 
+
+function _notificarProfessor(nomeAluno, diaAulaStr, horario, acao) {
+  var url    = getProps().getProperty('BOTCONVERSA_NOTIFICATION_URL');
+  var celular = getProps().getProperty('CELULAR_PROFESSOR');
+  if (!url || !celular) return;
+
+  var msgs = {
+    conf: '✅ ' + nomeAluno + ' confirmou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
+    canc: '❌ ' + nomeAluno + ' cancelou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
+    reag: '🔄 ' + nomeAluno + ' quer reagendar a aula do dia ' + diaAulaStr + ' às ' + horario + '.'
+  };
+
+  var phone = celular.charAt(0) === '+' ? celular : '+' + celular;
+  var opcoes = {
+    method:      'post',
+    contentType: 'application/json',
+    payload:     JSON.stringify({ phone: phone, mensagem: msgs[acao] || '' }),
+    muteHttpExceptions: true
+  };
+
+  try {
+    var resp = UrlFetchApp.fetch(url, opcoes);
+    console.log('Notificação professor: HTTP ' + resp.getResponseCode());
+  } catch (err) {
+    console.error('Erro ao notificar professor: ' + err.message);
+  }
+}
 
 function _criarCardTrello(nomeAluno, diaAulaStr, horario, professor, status) {
   var email = getProps().getProperty('EMAIL_TRELLO');
