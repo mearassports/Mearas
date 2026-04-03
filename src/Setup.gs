@@ -112,6 +112,60 @@ function verificarPlanilha() {
 }
 
 /**
+ * Cria (ou recria) as abas Professores e Config na planilha existente.
+ * Execute uma vez após criarPlanilha(), ou quando precisar adicionar as abas.
+ *
+ * Aba Professores — colunas:
+ *   A: Nome  |  B: Telefone (com DDI, sem +, ex: 5561999999999)
+ *
+ * Aba Config — colunas:
+ *   A: Chave  |  B: Valor
+ *   Chaves usadas pelo sistema:
+ *     CELULAR_SECRETARIA — número da secretária
+ */
+function criarAbasProfessoresEConfig() {
+  var planilha = getSpreadsheet();
+
+  // --- Aba Professores ---
+  var abaProfessores = planilha.getSheetByName(NOME_ABA_PROFESSORES);
+  if (!abaProfessores) {
+    abaProfessores = planilha.insertSheet(NOME_ABA_PROFESSORES);
+  } else {
+    abaProfessores.clearContents();
+  }
+
+  var headerProf = [['Nome', 'Telefone']];
+  abaProfessores.getRange(1, 1, 1, 2).setValues(headerProf);
+  abaProfessores.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#4a86e8').setFontColor('#ffffff');
+  abaProfessores.setColumnWidth(1, 180);
+  abaProfessores.setColumnWidth(2, 180);
+
+  // Linha de exemplo
+  abaProfessores.getRange(2, 1, 1, 2).setValues([['Israel', '5561999999999']]);
+
+  console.log('Aba "' + NOME_ABA_PROFESSORES + '" criada. Preencha com os professores reais.');
+
+  // --- Aba Config ---
+  var abaConfig = planilha.getSheetByName(NOME_ABA_CONFIG);
+  if (!abaConfig) {
+    abaConfig = planilha.insertSheet(NOME_ABA_CONFIG);
+  } else {
+    abaConfig.clearContents();
+  }
+
+  var headerConfig = [['Chave', 'Valor']];
+  abaConfig.getRange(1, 1, 1, 2).setValues(headerConfig);
+  abaConfig.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#4a86e8').setFontColor('#ffffff');
+  abaConfig.setColumnWidth(1, 220);
+  abaConfig.setColumnWidth(2, 220);
+
+  // Chaves do sistema
+  abaConfig.getRange(2, 1, 1, 2).setValues([['CELULAR_SECRETARIA', '5561999999999']]);
+
+  console.log('Aba "' + NOME_ABA_CONFIG + '" criada. Preencha com os valores reais.');
+}
+
+/**
  * Reseta o status de todos os alunos para vazio.
  * USE APENAS EM AMBIENTE DE TESTE.
  */

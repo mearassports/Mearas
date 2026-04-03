@@ -10,7 +10,13 @@
 //   WEBHOOK_SECRET        — Token secreto para validar chamadas ao doPost
 // =============================================================================
 
-var NOME_ABA = 'Alunos';
+var NOME_ABA            = 'Alunos';
+var NOME_ABA_PROFESSORES = 'Professores';
+var NOME_ABA_CONFIG      = 'Config';
+
+// Índices de coluna da aba Professores (base-0)
+var COL_PROF_NOME     = 0; // A
+var COL_PROF_TELEFONE = 1; // B
 
 // Índices de coluna (base-0, pois getValues() retorna array base-0)
 var COL_NOME       = 0;  // A
@@ -46,6 +52,41 @@ function getSpreadsheet() {
 
 function getAbaAlunos() {
   return getSpreadsheet().getSheetByName(NOME_ABA);
+}
+
+function getAbaProfessores() {
+  return getSpreadsheet().getSheetByName(NOME_ABA_PROFESSORES);
+}
+
+function getAbaConfig() {
+  return getSpreadsheet().getSheetByName(NOME_ABA_CONFIG);
+}
+
+// Busca o telefone do professor pelo nome na aba Professores
+function getProfessorTelefone(nomeProfessor) {
+  var aba = getAbaProfessores();
+  if (!aba) { console.warn('Aba Professores não encontrada.'); return null; }
+  var dados = aba.getDataRange().getValues();
+  for (var i = 1; i < dados.length; i++) {
+    if (String(dados[i][COL_PROF_NOME]).trim().toLowerCase() === nomeProfessor.trim().toLowerCase()) {
+      return String(dados[i][COL_PROF_TELEFONE]).trim();
+    }
+  }
+  console.warn('Professor não encontrado na planilha: ' + nomeProfessor);
+  return null;
+}
+
+// Busca um valor na aba Config pela chave
+function getConfigValor(chave) {
+  var aba = getAbaConfig();
+  if (!aba) { console.warn('Aba Config não encontrada.'); return null; }
+  var dados = aba.getDataRange().getValues();
+  for (var i = 0; i < dados.length; i++) {
+    if (String(dados[i][0]).trim() === chave) {
+      return String(dados[i][1]).trim();
+    }
+  }
+  return null;
 }
 
 // =============================================================================
@@ -398,7 +439,7 @@ function limparGatilhosTemporarios(nomeFuncao) {
 // =============================================================================
 
 function _notificarProfessor(nomeAluno, diaAulaStr, horario, professor, acao) {
-  var celular = getProps().getProperty('CELULAR_PROFESSOR');
+  var celular = getProfessorTelefone(professor);
   if (!celular) return;
 
   var msgs = {
@@ -411,7 +452,7 @@ function _notificarProfessor(nomeAluno, diaAulaStr, horario, professor, acao) {
 }
 
 function _notificarSecretaria(nomeAluno, diaAulaStr, horario, professor, acao) {
-  var celular = getProps().getProperty('CELULAR_SECRETARIA');
+  var celular = getConfigValor('CELULAR_SECRETARIA');
   if (!celular) return;
 
   var msgs = {
