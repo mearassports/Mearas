@@ -314,8 +314,8 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     phone:               phoneFmt,
     aluno:               nomeAluno,
     ProfessorParticular: professor,
-    horario_aulaPP:      horario.replace(':', 'h'),
-    data_aulaPP:         dataAula
+    horario_aulaPP:      _formatarHorarioExibicao(horario),
+    data_aulaPP:         _formatarDataExibicao(dataAula)
   };
 
   var opcoes = {
@@ -454,6 +454,19 @@ function _dataParaISO(dataStr, horarioStr) {
   var partes = dataStr.split('/');
   var hora = horarioStr ? horarioStr.replace('h', ':') : '00:00';
   return partes[2] + '-' + partes[1] + '-' + partes[0] + ' ' + hora + ':00';
+}
+
+// Formata data para exibição: 'dd/MM/yyyy' → 'dd/MM'
+function _formatarDataExibicao(dataStr) {
+  var partes = dataStr.split('/');
+  return partes[0] + '/' + partes[1];
+}
+
+// Formata horário para exibição: '10:00' → '10h', '10:30' → '10h30'
+function _formatarHorarioExibicao(horario) {
+  var partes = horario.split(':');
+  var min = partes[1] || '00';
+  return min === '00' ? partes[0] + 'h' : partes[0] + 'h' + min;
 }
 
 // Normaliza horário vindo do Sheets: pode ser Date (coluna formatada como hora) ou string
