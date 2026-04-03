@@ -314,7 +314,8 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     phone:               phoneFmt,
     aluno:               nomeAluno,
     ProfessorParticular: professor,
-    horario_aulaPP:      horario.replace(':', 'h')
+    horario_aulaPP:      horario.replace(':', 'h'),
+    data_aulaPP:         dataAula
   };
 
   var opcoes = {
