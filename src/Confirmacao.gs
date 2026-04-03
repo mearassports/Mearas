@@ -313,7 +313,7 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     phone:               phoneFmt,
     aluno:               nomeAluno,
     ProfessorParticular: professor,
-    data_aulaPP:         _dataParaISO(dataAula),
+    data_aulaPP:         _dataParaISO(dataAula, horario),
     horario_aulaPP:      horario.replace(':', 'h')
   };
 
@@ -337,6 +337,8 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
         return;
       }
       console.warn('BotConversa retornou HTTP ' + code + ' para ' + nomeAluno + '. Tentativa ' + (t + 1) + ' — Resposta: ' + resp.getContentText());
+      // Erro 4xx = problema no payload, não adianta retentar
+      if (code >= 400 && code < 500) break;
     } catch (err) {
       console.warn('Erro ao chamar BotConversa: ' + err.message + '. Tentativa ' + (t + 1));
     }
@@ -446,10 +448,11 @@ function _parseDateStr(dateStr) {
   return new Date(parseInt(partes[2], 10), parseInt(partes[1], 10) - 1, parseInt(partes[0], 10));
 }
 
-// Converte string 'dd/MM/yyyy' para formato ISO 'yyyy-MM-dd 00:00:00' esperado pelo BotConversa
-function _dataParaISO(dataStr) {
+// Converte 'dd/MM/yyyy' + 'HHhmm' para formato ISO 'yyyy-MM-dd HH:mm:00' esperado pelo BotConversa
+function _dataParaISO(dataStr, horarioStr) {
   var partes = dataStr.split('/');
-  return partes[2] + '-' + partes[1] + '-' + partes[0] + ' 00:00:00';
+  var hora = horarioStr ? horarioStr.replace('h', ':') : '00:00';
+  return partes[2] + '-' + partes[1] + '-' + partes[0] + ' ' + hora + ':00';
 }
 
 // Normaliza horário vindo do Sheets: pode ser Date (coluna formatada como hora) ou string
