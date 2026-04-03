@@ -306,8 +306,11 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     return;
   }
 
+  // BotConversa exige telefone com + no início
+  var phoneFmt = phone.charAt(0) === '+' ? phone : '+' + phone;
+
   var payload = {
-    phone:      phone,
+    phone:      phoneFmt,
     nome_aluno: nomeAluno,
     data_aula:  dataAula,
     horario:    horario,
