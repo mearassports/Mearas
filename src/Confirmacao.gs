@@ -322,6 +322,7 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
   };
 
   // Retry com exponential backoff (3 tentativas: 2s, 4s, 8s)
+  console.log('Payload BotConversa: ' + JSON.stringify(payload));
   var tentativas = 3;
   var espera = 2000;
   for (var t = 0; t < tentativas; t++) {
@@ -332,7 +333,7 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
         console.log('BotConversa OK para ' + nomeAluno + ' (' + phone + ')');
         return;
       }
-      console.warn('BotConversa retornou HTTP ' + code + ' para ' + nomeAluno + '. Tentativa ' + (t + 1));
+      console.warn('BotConversa retornou HTTP ' + code + ' para ' + nomeAluno + '. Tentativa ' + (t + 1) + ' — Resposta: ' + resp.getContentText());
     } catch (err) {
       console.warn('Erro ao chamar BotConversa: ' + err.message + '. Tentativa ' + (t + 1));
     }
