@@ -306,8 +306,14 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     return;
   }
 
+  // BotConversa exige número com + na frente: +5561999999999
+  var phoneFormatado = phone.toString().trim();
+  if (phoneFormatado.charAt(0) !== '+') {
+    phoneFormatado = '+' + phoneFormatado;
+  }
+
   var payload = {
-    phone:      phone,
+    phone:      phoneFormatado,
     nome_aluno: nomeAluno,
     data_aula:  dataAula,
     horario:    horario,
