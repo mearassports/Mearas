@@ -310,11 +310,11 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
   var phoneFmt = phone.charAt(0) === '+' ? phone : '+' + phone;
 
   var payload = {
-    phone:      phoneFmt,
-    nome_aluno: nomeAluno,
-    data_aula:  dataAula,
-    horario:    horario,
-    professor:  professor
+    phone:               phoneFmt,
+    aluno:               nomeAluno,
+    ProfessorParticular: professor,
+    data_aulaPP:         dataAula,
+    horario_aulaPP:      horario
   };
 
   var opcoes = {
