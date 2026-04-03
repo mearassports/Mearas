@@ -314,10 +314,8 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     phone:               phoneFmt,
     aluno:               nomeAluno,
     ProfessorParticular: professor,
-    horario_aulaPP:      horario.replace(':', 'h'),
-    data_aulaPP:         _dataParaISO(dataAula, horario)
+    horario_aulaPP:      horario.replace(':', 'h')
   };
-  // TODO: data_aulaPP retorna 400 — verificar tipo/formato esperado no BotConversa
 
   var opcoes = {
     method:      'post',
