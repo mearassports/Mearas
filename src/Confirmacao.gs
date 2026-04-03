@@ -424,7 +424,10 @@ function configurarTriggerDiario() {
 function _notificarProfessor(nomeAluno, diaAulaStr, horario, acao) {
   var url    = getProps().getProperty('BOTCONVERSA_NOTIFICATION_URL');
   var celular = getProps().getProperty('CELULAR_PROFESSOR');
-  if (!url || !celular) return;
+  if (!url || !celular) {
+    console.warn('_notificarProfessor: BOTCONVERSA_NOTIFICATION_URL ou CELULAR_PROFESSOR não configurados.');
+    return;
+  }
 
   var msgs = {
     conf: '✅ ' + nomeAluno + ' confirmou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
