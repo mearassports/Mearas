@@ -313,7 +313,7 @@ function enviarLembreteViaBotConversa(phone, nomeAluno, dataAula, horario, profe
     phone:               phoneFmt,
     aluno:               nomeAluno,
     ProfessorParticular: professor,
-    data_aulaPP:         dataAula,
+    data_aulaPP:         dataAula.replace(/\//g, '-'),
     horario_aulaPP:      horario
   };
 
