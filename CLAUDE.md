@@ -17,9 +17,9 @@ Este arquivo fornece contexto e instruções para assistentes de IA (Claude, Cop
 - ✅ Trello notificado via e-mail para cancelamentos e reagendamentos
 - ✅ Notificação do professor via segundo webhook BotConversa (`BOTCONVERSA_NOTIFICATION_URL`)
 - ✅ Professor e secretária notificados pelo próprio BotConversa via "Notificar membros do espaço"
+- ✅ Notificação do professor testada com clique real e confirmada funcionando
 
 ### Pendências imediatas
-- [ ] Testar fluxo completo com clique real no botão do WhatsApp (confirmar que professor recebe)
 - [ ] Configurar trigger diário para `dispararLembretesAmanha()` às 08h no Apps Script
 - [ ] Validar se `data_aulaPP` chega corretamente no flow do BotConversa
 
