@@ -10,12 +10,7 @@
 //   WEBHOOK_SECRET        — Token secreto para validar chamadas ao doPost
 // =============================================================================
 
-var NOME_ABA             = 'Alunos';
-var NOME_ABA_PROFESSORES = 'Professores';
-
-// Índices de coluna da aba Professores (base-0)
-var COL_PROF_NOME     = 0; // A
-var COL_PROF_TELEFONE = 1; // B
+var NOME_ABA = 'Alunos';
 
 // Índices de coluna (base-0, pois getValues() retorna array base-0)
 var COL_NOME       = 0;  // A
@@ -53,23 +48,6 @@ function getAbaAlunos() {
   return getSpreadsheet().getSheetByName(NOME_ABA);
 }
 
-function getAbaProfessores() {
-  return getSpreadsheet().getSheetByName(NOME_ABA_PROFESSORES);
-}
-
-// Busca o telefone do professor pelo nome na aba Professores
-function getProfessorTelefone(nomeProfessor) {
-  var aba = getAbaProfessores();
-  if (!aba) { console.warn('Aba Professores não encontrada.'); return null; }
-  var dados = aba.getDataRange().getValues();
-  for (var i = 1; i < dados.length; i++) {
-    if (String(dados[i][COL_PROF_NOME]).trim().toLowerCase() === nomeProfessor.trim().toLowerCase()) {
-      return String(dados[i][COL_PROF_TELEFONE]).trim();
-    }
-  }
-  console.warn('Professor não encontrado na planilha: ' + nomeProfessor);
-  return null;
-}
 
 
 // =============================================================================
@@ -309,9 +287,6 @@ function processarResposta(acao, nomeAluno, automatico) {
     enviarTextoGrupo(grupoId, msgGrupo);
   }
 
-  // Notifica professor em todos os casos
-  _notificarProfessor(nomeAluno, diaAulaStr, horario, professor, acao);
-
   // Cria card no Trello para cancelamentos e reagendamentos
   if (acao === 'canc' || acao === 'reag') {
     _criarCardTrello(nomeAluno, diaAulaStr, horario, professor, novoStatus);
@@ -420,39 +395,6 @@ function limparGatilhosTemporarios(nomeFuncao) {
 // FUNÇÕES INTERNAS AUXILIARES
 // =============================================================================
 
-function _notificarProfessor(nomeAluno, diaAulaStr, horario, professor, acao) {
-  var celular = getProfessorTelefone(professor);
-  if (!celular) return;
-
-  var msgs = {
-    conf: '✅ ' + nomeAluno + ' confirmou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
-    canc: '❌ ' + nomeAluno + ' cancelou a aula do dia ' + diaAulaStr + ' às ' + horario + '.',
-    reag: '🔄 ' + nomeAluno + ' quer reagendar a aula do dia ' + diaAulaStr + ' às ' + horario + '.'
-  };
-
-  _enviarMensagemWhatsApp(celular, msgs[acao] || '', 'professor');
-}
-
-
-function _enviarMensagemWhatsApp(celular, mensagem, destino) {
-  var url = getProps().getProperty('BOTCONVERSA_WEBHOOK_URL');
-  if (!url || !mensagem) return;
-
-  var phone = celular.charAt(0) === '+' ? celular : '+' + celular;
-  var opcoes = {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify({ phone: phone, mensagem: mensagem }),
-    muteHttpExceptions: true
-  };
-
-  try {
-    var resp = UrlFetchApp.fetch(url, opcoes);
-    console.log('Notificação ' + destino + ': HTTP ' + resp.getResponseCode());
-  } catch (err) {
-    console.error('Erro ao notificar ' + destino + ': ' + err.message);
-  }
-}
 
 function _criarCardTrello(nomeAluno, diaAulaStr, horario, professor, status) {
   var email = getProps().getProperty('EMAIL_TRELLO');

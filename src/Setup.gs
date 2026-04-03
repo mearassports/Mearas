@@ -112,34 +112,6 @@ function verificarPlanilha() {
 }
 
 /**
- * Cria (ou recria) a aba Professores na planilha existente.
- * Execute uma vez após criarPlanilha(), ou quando precisar recriar a aba.
- *
- * Aba Professores — colunas:
- *   A: Nome  |  B: Telefone (com DDI, sem +, ex: 5561999999999)
- */
-function criarAbaProfessores() {
-  var planilha = getSpreadsheet();
-
-  var abaProfessores = planilha.getSheetByName(NOME_ABA_PROFESSORES);
-  if (!abaProfessores) {
-    abaProfessores = planilha.insertSheet(NOME_ABA_PROFESSORES);
-  } else {
-    abaProfessores.clearContents();
-  }
-
-  abaProfessores.getRange(1, 1, 1, 2).setValues([['Nome', 'Telefone']]);
-  abaProfessores.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#4a86e8').setFontColor('#ffffff');
-  abaProfessores.setColumnWidth(1, 180);
-  abaProfessores.setColumnWidth(2, 180);
-
-  // Linha de exemplo — substitua pelo professor real
-  abaProfessores.getRange(2, 1, 1, 2).setValues([['Wellington', '5561999999999']]);
-
-  console.log('Aba "' + NOME_ABA_PROFESSORES + '" criada. Preencha com os telefones reais.');
-}
-
-/**
  * Reseta o status de todos os alunos para vazio.
  * USE APENAS EM AMBIENTE DE TESTE.
  */
